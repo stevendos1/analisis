@@ -1,0 +1,41 @@
+%%{init: {'theme':'base','themeVariables': {'primaryColor':'#5d5fef','primaryBorderColor':'#5d5fef','primaryTextColor':'#222','lineColor':'#111','noteBkgColor':'#fff8c5','noteBorderColor':'#d4b106','fontSize':'14px','fontFamily':'Segoe UI'}}}%%
+stateDiagram-v2
+    direction LR
+    classDef lifecycle fill:#ffffff,stroke:#5d5fef,stroke-width:2px,color:#222
+
+    state "En Progreso\nEstaCompletada = false\nMontoActual < MontoObjetivo" as EnProgreso
+    state "Completada\nEstaCompletada = true\nMontoActual ≥ MontoObjetivo" as Completada
+    state "Eliminada\nRegistro físico borrado" as Eliminada
+
+    class EnProgreso,Completada,Eliminada lifecycle
+
+    [*] --> EnProgreso : CrearMeta() / inicializarMeta()
+    [*] --> Completada : CrearMeta() [payload.EstaCompletada] / inicializarMeta()
+
+    %% Ciclo natural de ahorro
+    EnProgreso --> EnProgreso : RegistrarTransaccion|Contribuir\n[MontoActual+aporte < MontoObjetivo]\n/ ActualizarMontos()
+    EnProgreso --> Completada : RegistrarTransaccion|Contribuir\n[MontoActual+aporte ≥ MontoObjetivo]\n/ ActualizarMontos()
+
+    Completada --> Completada : RegistrarTransaccion|Contribuir\n[MontoActual+aporte ≥ MontoObjetivo]\n/ MantenerCierre()
+    Completada --> EnProgreso : RegistrarTransaccion|Contribuir\n[MontoActual+aporte < MontoObjetivo]\n/ AjustarMontos()
+
+    %% Actualizaciones manuales vía PUT
+    EnProgreso --> Completada : ActualizarMeta()\n[EstaCompletada || MontoActual ≥ objetivo]\n/ PersistirCambios()
+    Completada --> EnProgreso : ActualizarMeta()\n[!EstaCompletada]\n/ PersistirCambios()
+
+    %% Borrado definitivo
+    EnProgreso --> Eliminada : EliminarMeta() / BorrarRegistro()
+    Completada --> Eliminada : EliminarMeta() / BorrarRegistro()
+    Eliminada --> [*]
+
+    note right of EnProgreso
+        Estado operacional por defecto.
+        Las contribuciones suman al monto y
+        recalculan el progreso.
+    end note
+
+    note right of Completada
+        Se marca cuando MontoActual
+        alcanza o supera el objetivo.
+        Puede reabrirse con ajustes manuales.
+    end note
