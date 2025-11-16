@@ -1,0 +1,9 @@
+# Auto detect text files and normalize line endings
+* text=auto eol=lf
+# Ensure web assets are treated as binary to avoid merging
+*.png binary
+*.jpg binary
+*.pdf binary
+*.zip binary
+*.woff binary
+*.woff2 binary

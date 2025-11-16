@@ -7,11 +7,11 @@ namespace Spendnt.Shared.DTOs
     {
         [Required(ErrorMessage = "El nombre es obligatorio.")]
         [MaxLength(50)]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = null!;
 
         [Required(ErrorMessage = "El apellido es obligatorio.")]
         [MaxLength(50)]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = null!;
 
         
     }

@@ -64,8 +64,10 @@
 
 @code {
     private List<RecordatorioGasto>? listaRecordatorios;
+    #pragma warning disable CS0414 // assigned but not used
     private bool isLoading = true;
     private bool loadFailed = false;
+    #pragma warning restore CS0414
 
     protected override async Task OnInitializedAsync()
     {

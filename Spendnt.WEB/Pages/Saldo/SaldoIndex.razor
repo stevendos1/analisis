@@ -92,7 +92,9 @@ else
 @code {
     private Saldo? saldoActual;
     private bool errorAlCargar = false;
+    #pragma warning disable CS0414 // isLoadingSaldo may be assigned but not used; keep for future UI state
     private bool isLoadingSaldo = true;
+    #pragma warning restore CS0414
 
     protected override async Task OnInitializedAsync()
     {

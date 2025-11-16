@@ -24,7 +24,7 @@ namespace Spendnt.API.Controllers
             _context = context;
         }
 
-        private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier);
+        private string? GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CalendarioEventoDto>>> GetEventos(
@@ -89,14 +89,14 @@ namespace Spendnt.API.Controllers
                 Color = "orange"
             }));
 
-            var metas = await _context.MetasAhorro
-                 .Where(m => m.UserId == userId && m.FechaObjetivo.HasValue && m.FechaObjetivo.Value >= fechaInicio && m.FechaObjetivo.Value <= fechaFin)
+              var metas = await _context.MetasAhorro
+                  .Where(m => m.UserId == userId && m.FechaObjetivo.HasValue && m.FechaObjetivo.Value >= fechaInicio && m.FechaObjetivo.Value <= fechaFin)
                 .ToListAsync();
             eventos.AddRange(metas.Select(m => new CalendarioEventoDto
             {
                 Id = $"meta-{m.Id}",
                 Title = $"Meta: {m.Nombre} (Objetivo: {m.MontoObjetivo:C})",
-                Start = m.FechaObjetivo.Value,
+                Start = m.FechaObjetivo!.Value,
                 Tipo = "meta",
                 Monto = m.MontoObjetivo,
                 Color = "blue"

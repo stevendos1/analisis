@@ -8,13 +8,13 @@ namespace Spendnt.Shared.DTOs
 {
     public class CalendarioEventoDto
     {
-        public string Id { get; set; }
-        public string Title { get; set; }
+        public string Id { get; set; } = null!;
+        public string Title { get; set; } = null!;
         public DateTime Start { get; set; }
         public DateTime? End { get; set; }
-        public string Tipo { get; set; }
+        public string Tipo { get; set; } = null!;
         public decimal? Monto { get; set; }
-        public string Color { get; set; }
-        public string Url { get; set; }
+        public string Color { get; set; } = null!;
+        public string Url { get; set; } = null!;
     }
 }

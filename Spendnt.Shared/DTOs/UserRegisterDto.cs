@@ -6,24 +6,24 @@ namespace Spendnt.Shared.DTOs
     public class UserRegisterDto
     {
         [Required(ErrorMessage = "El nombre de usuario es obligatorio.")]
-        public string UserName { get; set; }
+        public string UserName { get; set; } = null!;
 
         [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
         [EmailAddress(ErrorMessage = "El correo electrónico no es válido.")]
-        public string Email { get; set; }
+        public string Email { get; set; } = null!;
 
         [Required(ErrorMessage = "La contraseña es obligatoria.")]
         [DataType(DataType.Password)]
-        public string Password { get; set; }
+        public string Password { get; set; } = null!;
 
         [DataType(DataType.Password)]
         [Compare("Password", ErrorMessage = "La contraseña y la confirmación de contraseña no coinciden.")]
-        public string ConfirmPassword { get; set; }
+        public string ConfirmPassword { get; set; } = null!;
 
         [Required(ErrorMessage = "El nombre es obligatorio.")]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = null!;
 
         [Required(ErrorMessage = "El apellido es obligatorio.")]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = null!;
     }
 }

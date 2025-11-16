@@ -61,8 +61,10 @@
 
 @code {
     private List<Ingresos>? listaIngresos;
+#pragma warning disable CS0414 // Variable assigned but its value is never used (UI state tracked but used by GenericList)
     private bool isLoading = true;
     private bool loadFailed = false;
+#pragma warning restore CS0414
 
     protected override async Task OnInitializedAsync()
     {

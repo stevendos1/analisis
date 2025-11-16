@@ -23,7 +23,7 @@ namespace Spendnt.API.Controllers
             _context = context;
         }
 
-        private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier);
+        private string? GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<RecordatorioGasto>>> Get()

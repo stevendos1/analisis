@@ -55,10 +55,10 @@ namespace Spendnt.API.Controllers
             var userViewModel = new UserViewModel
             {
                 Id = user.Id,
-                UserName = user.UserName,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
+                UserName = user.UserName ?? string.Empty,
+                Email = user.Email ?? string.Empty,
+                FirstName = user.FirstName ?? string.Empty,
+                LastName = user.LastName ?? string.Empty,
                 ProfilePictureUrl = user.ProfilePictureUrl,
                 Roles = roles
             };

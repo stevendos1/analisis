@@ -23,7 +23,7 @@ namespace Spendnt.API.Controllers
             _context = context;
         }
 
-        private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier);
+        private string? GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Egresos>>> Get()
@@ -82,7 +82,7 @@ namespace Spendnt.API.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException ex)
+            catch (DbUpdateException)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Ocurrió un error al guardar el egreso.");
             }
@@ -117,7 +117,7 @@ namespace Spendnt.API.Controllers
                 if (!await _context.Egresos.AnyAsync(e => e.Id == id)) return NotFound();
                 else throw;
             }
-            catch (DbUpdateException ex)
+            catch (DbUpdateException)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Ocurrió un error al actualizar el egreso.");
             }

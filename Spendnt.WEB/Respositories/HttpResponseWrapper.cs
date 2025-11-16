@@ -5,7 +5,7 @@ namespace Spendnt.WEB.Repositories
 {
     public class HttpResponseWrapper<T>
     {
-        public HttpResponseWrapper(T response, bool error, HttpResponseMessage httpResponseMessage)
+        public HttpResponseWrapper(T? response, bool error, HttpResponseMessage httpResponseMessage)
         {
             Error = error;
             Response = response;
@@ -14,7 +14,7 @@ namespace Spendnt.WEB.Repositories
 
         public bool Error { get; set; }
 
-        public T Response { get; set; }
+        public T? Response { get; set; }
 
         public HttpResponseMessage HttpResponseMessage { get; set; }
 
@@ -22,7 +22,7 @@ namespace Spendnt.WEB.Repositories
         {
             if (!Error)
             {
-                return null;
+                return string.Empty;
             }
 
             var codigoEstatus = HttpResponseMessage.StatusCode;

@@ -79,13 +79,13 @@ namespace Spendnt.API.Controllers
 
             var metaAhorro = new MetaAhorro
             {
-                Nombre = metaDto.Nombre,
-                Descripcion = metaDto.Descripcion,
+                Nombre = metaDto.Nombre!,
+                Descripcion = metaDto.Descripcion ?? string.Empty,
                 MontoObjetivo = metaDto.MontoObjetivo,
                 MontoActual = metaDto.MontoActual, 
                 FechaObjetivo = metaDto.FechaObjetivo,
                 EstaCompletada = metaDto.EstaCompletada,
-                UserId = userId,
+                UserId = userId!,
                 FechaCreacion = DateTime.UtcNow
             };
 

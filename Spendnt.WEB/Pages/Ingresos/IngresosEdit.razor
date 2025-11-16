@@ -33,9 +33,11 @@ else if (ingresoModel != null)
     private Ingresos? ingresoModel;
     private IngresosForm? ingresosForm;
     private List<Categoria> listaCategorias = new();
+    #pragma warning disable CS0414 // assigned but not used (UI state)
     private bool loadFailed = false;
     private bool isLoadingCategorias = true;
     private bool isLoadingIngreso = true;
+    #pragma warning restore CS0414
 
     protected override async Task OnInitializedAsync()
     {

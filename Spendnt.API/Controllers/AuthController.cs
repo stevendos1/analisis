@@ -103,8 +103,8 @@ namespace Spendnt.API.Controllers
                 var authClaims = new List<Claim>
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id), 
-                    new Claim(ClaimTypes.Name, user.UserName),     
-                    new Claim(JwtRegisteredClaimNames.Email, user.Email), 
+                    new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),     
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty), 
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim("firstName", user.FirstName ?? ""),
                     new Claim("lastName", user.LastName ?? ""),
@@ -121,7 +121,7 @@ namespace Spendnt.API.Controllers
                     authClaims.Add(new Claim(ClaimTypes.Role, userRole));
                 }
 
-                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]!));
 
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {

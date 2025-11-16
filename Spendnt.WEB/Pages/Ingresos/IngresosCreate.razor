@@ -19,7 +19,9 @@
     private Ingresos ingresoModel = new();
     private IngresosForm? ingresosForm;
     private List<Categoria> listaCategorias = new();
+    #pragma warning disable CS0414 // assigned but not used (UI state)
     private bool isLoadingCategorias = true;
+    #pragma warning restore CS0414
 
     protected override async Task OnInitializedAsync()
     {

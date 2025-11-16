@@ -35,11 +35,11 @@ namespace Spendnt.Shared.Entities
 
       
         [Required]
-        public string UserId { get; set; } 
+        public string UserId { get; set; } = null!; 
 
         [JsonIgnore]
         [ForeignKey("UserId")]
-        public virtual User User { get; set; } 
+        public virtual User User { get; set; } = null!; 
 
         public Saldo()
         {
