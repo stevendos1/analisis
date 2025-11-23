@@ -82,3 +82,4 @@ El seeder crea un usuario listo para iniciar sesión y explorar la aplicación:
 - **Rol:** `User` (los roles `User` y `Admin` se crean automáticamente).
 
 Si necesitas un administrador, puedes promover el usuario semilla manualmente o crear uno nuevo usando las herramientas de Identity.
+
