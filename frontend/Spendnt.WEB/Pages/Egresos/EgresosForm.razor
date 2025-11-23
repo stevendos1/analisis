@@ -1,0 +1,130 @@
+﻿@* Spendnt.WEB/Pages/Egresos/EgresosForm.razor *@
+@using Spendnt.Shared.DTOs.Egreso
+@using Spendnt.Shared.DTOs.Categoria
+@using Spendnt.Shared.Entities
+@using System.ComponentModel.DataAnnotations
+
+<EditForm Model="Egreso" OnSubmit="OnSubmit">
+    <DataAnnotationsValidator />
+    @* <ValidationSummary /> *@
+
+    <div class="mb-3">
+        <label for="egresoMonto" class="form-label">Monto del Egreso</label>
+        <div>
+            <InputNumber id="egresoMonto" class="form-control" @bind-Value="Egreso.Monto" />
+            <ValidationMessage For="@(() => Egreso.Monto)" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="egresoFecha" class="form-label">Fecha</label>
+        <div>
+            <InputDate id="egresoFecha" class="form-control" @bind-Value="Egreso.Fecha" />
+            <ValidationMessage For="@(() => Egreso.Fecha)" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="egresoCategoria" class="form-label">Categoría</label>
+        <div>
+            @if (Categorias == null)
+            {
+                <InputSelect id="egresoCategoria" class="form-control" disabled TValue="int">
+                    @* Añadido TValue aquí también por consistencia *@
+                    <option value="">-- Cargando categorías... --</option>
+                </InputSelect>
+            }
+            else
+            {
+                @* ESPECIFICAR TValue="int" AQUÍ *@
+                <InputSelect id="egresoCategoria" class="form-control" @bind-Value="Egreso.CategoriaId" TValue="int">
+                    <option value="0">-- Seleccione una categoría --</option>
+                    @if (Categorias.Any())
+                    {
+                        @foreach (var categoria in Categorias)
+                        {
+                            <option value="@categoria.Id">@categoria.Nombre</option>
+                        }
+                    }
+                    else
+                    {
+                        <option value="" disabled>No hay categorías disponibles</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => Egreso.CategoriaId)" />
+            }
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="egresoWallet" class="form-label">Cartera</label>
+        <div>
+            @if (Wallets == null)
+            {
+                <InputSelect id="egresoWallet" class="form-control" disabled TValue="int?">
+                    <option value="">-- Cargando carteras... --</option>
+                </InputSelect>
+            }
+            else
+            {
+                <InputSelect id="egresoWallet" class="form-control" @bind-Value="Egreso.WalletId" TValue="int?">
+                    <option value="">-- Seleccione una cartera (Opcional) --</option>
+                    @foreach (var wallet in Wallets)
+                    {
+                        <option value="@wallet.Id">@wallet.Name (@(wallet.IsLocked ? "Bloqueada" : "Activa"))</option>
+                    }
+                </InputSelect>
+                 @if(Egreso.WalletId.HasValue)
+                {
+                    var selectedWallet = Wallets.FirstOrDefault(w => w.Id == Egreso.WalletId);
+                    if(selectedWallet != null && selectedWallet.IsLocked)
+                    {
+                        <div class="alert alert-danger mt-1">
+                            Esta cartera está bloqueada. No se pueden registrar egresos.
+                        </div>
+                    }
+                }
+            }
+        </div>
+    </div>
+
+   
+
+    <div class="mt-4">
+        <button class="btn btn-primary" type="submit">
+            <i class="bi bi-save me-1"></i> Guardar Egreso
+        </button>
+        <button class="btn btn-secondary" type="button" @onclick="ReturnAction">
+            <i class="bi bi-arrow-left-circle me-1"></i> Regresar
+        </button>
+    </div>
+</EditForm>
+
+@code {
+#nullable enable
+    [EditorRequired]
+    [Parameter]
+    public EgresoUpdateDto Egreso { get; set; } = new();
+
+    [Parameter]
+    public List<CategoriaDto>? Categorias { get; set; }
+
+    [Parameter]
+    public List<Wallet>? Wallets { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback<EditContext> OnSubmit { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback ReturnAction { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (Egreso.Fecha == DateTime.MinValue)
+        {
+            Egreso.Fecha = DateTime.Today;
+        }
+    }
+}

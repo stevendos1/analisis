@@ -1,0 +1,45 @@
+@page "/wallets/create"
+@using Spendnt.Shared.Entities
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+@inject CurrieTechnologies.Razor.SweetAlert2.SweetAlertService Swal
+
+<h3>Crear Cartera</h3>
+
+<EditForm Model="Wallet" OnValidSubmit="CreateWallet">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="name" class="form-label">Nombre</label>
+        <InputText id="name" class="form-control" @bind-Value="Wallet.Name" />
+    </div>
+
+    <div class="mb-3 form-check">
+        <InputCheckbox id="isLocked" class="form-check-input" @bind-Value="Wallet.IsLocked" />
+        <label class="form-check-label" for="isLocked">Bloquear Cartera (Solo Ingresos)</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a href="/wallets" class="btn btn-secondary">Cancelar</a>
+</EditForm>
+
+@code {
+    private Wallet Wallet = new Wallet();
+
+    private async Task CreateWallet()
+    {
+        var response = await HttpClient.PostAsJsonAsync("api/wallets", Wallet);
+        if (response.IsSuccessStatusCode)
+        {
+            await Swal.FireAsync("Creado", "La cartera ha sido creada.", SweetAlertIcon.Success);
+            NavigationManager.NavigateTo("/wallets");
+        }
+        else
+        {
+            await Swal.FireAsync("Error", "No se pudo crear la cartera.", SweetAlertIcon.Error);
+        }
+    }
+}
