@@ -1,0 +1,114 @@
+﻿@page "/MetasAhorro/edit/{Id:int}"
+@attribute [Authorize]
+
+@using Spendnt.Shared.DTOs.MetaAhorro
+@using Spendnt.WEB.Repositories
+@using CurrieTechnologies.Razor.SweetAlert2
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject NavigationManager navigationManager
+@inject IRepository repository
+@inject SweetAlertService swal
+
+<h3>Editar Meta de Ahorro</h3>
+
+@if (metaAhorroModel is null && !loadFailed)
+{
+    <p><em>Cargando meta de ahorro...</em></p>
+}
+else if (loadFailed)
+{
+    <div class="alert alert-danger" role="alert">No se pudo cargar la meta de ahorro para editar.</div>
+}
+else if (metaAhorroModel is not null)
+{
+    <MetasAhorroForm @ref="metaAhorroForm" MetaAhorro="metaAhorroModel!" OnSubmit="Edit" ReturnAction="Return" />
+}
+
+@code {
+#nullable enable
+    [Parameter]
+    public int Id { get; set; }
+
+    private MetaAhorroUpdateDto? metaAhorroModel;
+    private MetasAhorroForm? metaAhorroForm;
+    private bool loadFailed = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        loadFailed = false;
+        try
+        {
+            var responseHTTP = await repository.GetAsync<MetaAhorroDto>($"/api/MetasAhorro/{Id}");
+            if (responseHTTP.Error)
+            {
+                loadFailed = true;
+                if (responseHTTP.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    navigationManager.NavigateTo("/MetasAhorro");
+                }
+                else
+                {
+                    var messageError = await responseHTTP.GetErrorMessageAsync();
+                    await swal.FireAsync("Error", messageError, SweetAlertIcon.Error);
+                }
+            }
+            else
+            {
+                var metaDetalle = responseHTTP.Response;
+                if (metaDetalle == null)
+                {
+                    loadFailed = true;
+                }
+                else
+                {
+                    metaAhorroModel = new MetaAhorroUpdateDto
+                    {
+                        Nombre = metaDetalle.Nombre,
+                        Descripcion = metaDetalle.Descripcion,
+                        MontoObjetivo = metaDetalle.MontoObjetivo,
+                        MontoActual = metaDetalle.MontoActual,
+                        FechaObjetivo = metaDetalle.FechaObjetivo,
+                        EstaCompletada = metaDetalle.EstaCompletada
+                    };
+                }
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            loadFailed = true;
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            loadFailed = true;
+            await swal.FireAsync("Error", $"Error inesperado al cargar la meta de ahorro: {ex.Message}", SweetAlertIcon.Error);
+        }
+    }
+
+    private async Task Edit()
+    {
+        if (metaAhorroModel is null)
+        {
+            await swal.FireAsync("Error", "No se pudo cargar la meta para actualizar.", SweetAlertIcon.Error);
+            return;
+        }
+
+        var responseHTTP = await repository.PutAsync($"/api/MetasAhorro/{Id}", metaAhorroModel);
+        if (responseHTTP.Error)
+        {
+            var mensajeError = await responseHTTP.GetErrorMessageAsync();
+            await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+        }
+        else
+        {
+            navigationManager.NavigateTo("/MetasAhorro");
+        }
+    }
+
+    private void Return()
+    {
+        navigationManager.NavigateTo("/MetasAhorro");
+    }
+}

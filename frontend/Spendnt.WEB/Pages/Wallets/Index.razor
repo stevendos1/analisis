@@ -1,0 +1,95 @@
+@page "/wallets"
+@using Spendnt.Shared.Entities
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+@inject CurrieTechnologies.Razor.SweetAlert2.SweetAlertService Swal
+
+<h3>Mis Carteras</h3>
+
+<div class="mb-3">
+    <a href="/wallets/create" class="btn btn-primary">Nueva Cartera</a>
+</div>
+
+@if (Wallets == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Balance</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var wallet in Wallets)
+            {
+                <tr>
+                    <td>@wallet.Name</td>
+                    <td>@wallet.Balance</td>
+                    <td>
+                        @if(wallet.IsLocked)
+                        {
+                            <span class="badge bg-danger">Bloqueada</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Activa</span>
+                        }
+                    </td>
+                    <td>
+                        <a href="/wallets/edit/@wallet.Id" class="btn btn-warning btn-sm">Editar</a>
+                        <button class="btn btn-danger btn-sm" @onclick="@(() => DeleteWallet(wallet.Id))">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Wallet>? Wallets;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadWallets();
+    }
+
+    private async Task LoadWallets()
+    {
+        Wallets = await HttpClient.GetFromJsonAsync<List<Wallet>>("api/wallets");
+    }
+
+    private async Task DeleteWallet(int id)
+    {
+        var result = await Swal.FireAsync(new SweetAlertOptions
+        {
+            Title = "¿Estás seguro?",
+            Text = "No podrás revertir esto",
+            Icon = SweetAlertIcon.Warning,
+            ShowCancelButton = true,
+            ConfirmButtonText = "Sí, eliminar",
+            CancelButtonText = "Cancelar"
+        });
+
+        if (result.IsConfirmed)
+        {
+            var response = await HttpClient.DeleteAsync($"api/wallets/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadWallets();
+                await Swal.FireAsync("Eliminado", "La cartera ha sido eliminada.", SweetAlertIcon.Success);
+            }
+            else
+            {
+                await Swal.FireAsync("Error", "No se pudo eliminar la cartera.", SweetAlertIcon.Error);
+            }
+        }
+    }
+}

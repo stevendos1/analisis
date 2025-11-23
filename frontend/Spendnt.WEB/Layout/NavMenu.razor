@@ -1,0 +1,173 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Spendnt.WEB.Auth
+@using System.Security.Claims
+
+@inject NavigationManager NavigationManager
+@inject ILoginService LoginService
+@inject HttpClient Http
+
+<div class="nav-menu">
+    <div class="nav-section">
+        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+            <span class="bi bi-house-door" aria-hidden="true"></span>
+            <span>Inicio</span>
+        </NavLink>
+    </div>
+
+    <AuthorizeView>
+        <Authorized>
+            <div class="user-card">
+                <NavLink href="user-profile" class="user-card-link">
+                    @if (!string.IsNullOrEmpty(profilePictureUrlForNav))
+                    {
+                        <img src="@profilePictureUrlForNav" alt="Foto de perfil" class="avatar" />
+                    }
+                    else
+                    {
+                        <div class="avatar placeholder">
+                            <span class="bi bi-person"></span>
+                        </div>
+                    }
+
+                    <div class="user-details">
+                        <span class="user-name">
+                            @context.User.FindFirstValue(ClaimTypes.GivenName)
+                            @context.User.FindFirstValue(ClaimTypes.Surname)
+                        </span>
+                        <span class="user-email">@context.User.Identity?.Name</span>
+                        <span class="user-link">Ver perfil</span>
+                    </div>
+                    <span class="bi bi-chevron-right" aria-hidden="true"></span>
+                </NavLink>
+            </div>
+
+            <div class="nav-section">
+                <NavLink class="nav-link" href="ingresos">
+                    <span class="bi bi-arrow-up-circle" aria-hidden="true"></span>
+                    <span>Ingresos</span>
+                </NavLink>
+                <NavLink class="nav-link" href="egresos">
+                    <span class="bi bi-arrow-down-circle" aria-hidden="true"></span>
+                    <span>Egresos</span>
+                </NavLink>
+                <NavLink class="nav-link" href="saldo">
+                    <span class="bi bi-wallet2" aria-hidden="true"></span>
+                    <span>Saldo</span>
+                </NavLink>
+                <NavLink class="nav-link" href="MetasAhorro">
+                    <span class="bi bi-piggy-bank" aria-hidden="true"></span>
+                    <span>Metas de Ahorro</span>
+                </NavLink>
+                <NavLink class="nav-link" href="calendario">
+                    <span class="bi bi-calendar-event" aria-hidden="true"></span>
+                    <span>Calendario</span>
+                </NavLink>
+            </div>
+
+            <div class="nav-footer">
+                <button class="logout-button" type="button" @onclick="HandleLogout">
+                    <span class="bi bi-box-arrow-right" aria-hidden="true"></span>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="nav-section">
+                <NavLink class="nav-link" href="login">
+                    <span class="bi bi-box-arrow-in-right" aria-hidden="true"></span>
+                    <span>Iniciar Sesión</span>
+                </NavLink>
+                <NavLink class="nav-link" href="register">
+                    <span class="bi bi-person-plus" aria-hidden="true"></span>
+                    <span>Registrarse</span>
+                </NavLink>
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+@code {
+#nullable enable
+    private string? profilePictureUrlForNav;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthenticationStateTask != null)
+        {
+            var authState = await AuthenticationStateTask;
+            await UpdateUserProfilePictureAsync(authState.User);
+
+            if (LoginService is AuthenticationStateProvider authProvider)
+                authProvider.AuthenticationStateChanged += HandleAuthenticationStateChanged;
+        }
+    }
+
+    private void HandleAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        InvokeAsync(async () =>
+        {
+            var authState = await task;
+            await UpdateUserProfilePictureAsync(authState.User);
+            StateHasChanged();
+        });
+    }
+
+    private async Task UpdateUserProfilePictureAsync(ClaimsPrincipal user)
+    {
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var pictureUrl = user.Claims.FirstOrDefault(c => c.Type == "profile_picture")?.Value;
+
+            try
+            {
+                var profile = await Http.GetFromJsonAsync<UserViewModel>("api/UserProfile");
+                if (!string.IsNullOrWhiteSpace(profile?.ProfilePictureUrl))
+                {
+                    var sanitizedUrl = profile.ProfilePictureUrl;
+                    var separator = sanitizedUrl.Contains('?') ? "&" : "?";
+                    // Añadimos un hash rápido para evitar problemas de caché al actualizar la imagen.
+                    pictureUrl = $"{sanitizedUrl}{separator}v={Guid.NewGuid():N}";
+                }
+            }
+            catch
+            {
+                // Ignoramos errores silenciosamente para no romper la navegación.
+            }
+
+            profilePictureUrlForNav = NormalizeProfilePictureUrl(pictureUrl);
+        }
+        else
+            profilePictureUrlForNav = null;
+    }
+
+    private async Task HandleLogout()
+    {
+        await LoginService.LogoutAsync();
+        NavigationManager.NavigateTo("/");
+    }
+
+    private string? NormalizeProfilePictureUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return null;
+
+        if (Uri.TryCreate(url, UriKind.Absolute, out var absoluteUri))
+            return absoluteUri.ToString();
+
+        var baseAddress = Http.BaseAddress?.ToString().TrimEnd('/');
+        if (!string.IsNullOrEmpty(baseAddress))
+            return $"{baseAddress}/{url.TrimStart('/')}";
+
+        return url;
+    }
+
+    public void Dispose()
+    {
+        if (LoginService is AuthenticationStateProvider authProvider)
+            authProvider.AuthenticationStateChanged -= HandleAuthenticationStateChanged;
+    }
+#nullable restore
+}

@@ -1,0 +1,6 @@
+@Spendnt.API_HostAddress = http://localhost:5230
+
+GET {{Spendnt.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

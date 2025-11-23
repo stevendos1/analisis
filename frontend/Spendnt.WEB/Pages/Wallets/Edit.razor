@@ -1,0 +1,66 @@
+@page "/wallets/edit/{id:int}"
+@using Spendnt.Shared.Entities
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+@inject CurrieTechnologies.Razor.SweetAlert2.SweetAlertService Swal
+
+<h3>Editar Cartera</h3>
+
+@if (Wallet == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else
+{
+    <EditForm Model="Wallet" OnValidSubmit="UpdateWallet">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="name" class="form-label">Nombre</label>
+            <InputText id="name" class="form-control" @bind-Value="Wallet.Name" />
+        </div>
+
+        <div class="mb-3 form-check">
+            <InputCheckbox id="isLocked" class="form-check-input" @bind-Value="Wallet.IsLocked" />
+            <label class="form-check-label" for="isLocked">Bloquear Cartera (Solo Ingresos)</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        <a href="/wallets" class="btn btn-secondary">Cancelar</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private Wallet? Wallet;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Wallet = await HttpClient.GetFromJsonAsync<Wallet>($"api/wallets/{Id}");
+        }
+        catch (Exception)
+        {
+            await Swal.FireAsync("Error", "No se pudo cargar la cartera.", SweetAlertIcon.Error);
+            NavigationManager.NavigateTo("/wallets");
+        }
+    }
+
+    private async Task UpdateWallet()
+    {
+        var response = await HttpClient.PutAsJsonAsync($"api/wallets/{Id}", Wallet);
+        if (response.IsSuccessStatusCode)
+        {
+            await Swal.FireAsync("Actualizado", "La cartera ha sido actualizada.", SweetAlertIcon.Success);
+            NavigationManager.NavigateTo("/wallets");
+        }
+        else
+        {
+            await Swal.FireAsync("Error", "No se pudo actualizar la cartera.", SweetAlertIcon.Error);
+        }
+    }
+}

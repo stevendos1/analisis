@@ -1,0 +1,81 @@
+﻿@page "/Ingresos/create"
+@attribute [Authorize]
+
+@using Spendnt.Shared.DTOs.Ingreso
+@using Spendnt.Shared.DTOs.Categoria
+@using Spendnt.WEB.Repositories
+@using CurrieTechnologies.Razor.SweetAlert2
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService sweetAlertService
+
+<h3>Registrar Nuevo Ingreso</h3>
+
+<IngresosForm @ref="ingresosForm" Ingreso="ingresoModel" OnSubmit="Create" ReturnAction="Return" Categorias="listaCategorias" />
+
+@code {
+#nullable enable
+    private IngresoUpdateDto ingresoModel = new();
+    private IngresosForm? ingresosForm;
+    private List<CategoriaDto> listaCategorias = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ingresoModel.Fecha = ingresoModel.Fecha == DateTime.MinValue ? DateTime.Today : ingresoModel.Fecha;
+        await CargarCategorias();
+    }
+
+    private async Task CargarCategorias()
+    {
+        try
+        {
+            var responseHttp = await repository.GetAsync<List<CategoriaDto>>("/api/Categorias");
+            if (responseHttp.Error)
+            {
+                var mensaje = await responseHttp.GetErrorMessageAsync();
+                await sweetAlertService.FireAsync("Error", $"No se pudieron cargar las categorías: {mensaje}", SweetAlertIcon.Error);
+                listaCategorias = new List<CategoriaDto>();
+            }
+            else
+            {
+                listaCategorias = responseHttp.Response ?? new List<CategoriaDto>();
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            await sweetAlertService.FireAsync("Error", $"Error inesperado al cargar categorías: {ex.Message}", SweetAlertIcon.Error);
+            listaCategorias = new List<CategoriaDto>();
+        }
+    }
+
+    private async Task Create()
+    {
+        var createDto = new IngresoCreateDto
+        {
+            Monto = ingresoModel.Monto,
+            Fecha = ingresoModel.Fecha,
+            CategoriaId = ingresoModel.CategoriaId
+        };
+
+        var responseHttp = await repository.PostAsync("/api/Ingresos", createDto);
+        if (responseHttp.Error)
+        {
+            var mensaje = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", mensaje, SweetAlertIcon.Error);
+            return;
+        }
+        navigationManager.NavigateTo("/Ingresos");
+    }
+
+    private void Return()
+    {
+        navigationManager.NavigateTo("/Ingresos");
+    }
+}

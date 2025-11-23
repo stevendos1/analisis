@@ -1,0 +1,33 @@
+﻿@page "/categorias/create"
+@attribute [Authorize(Roles = "Admin")]
+
+@using Spendnt.Shared.DTOs.Categoria
+@using Spendnt.WEB.Repositories
+@using CurrieTechnologies.Razor.SweetAlert2
+@using Microsoft.AspNetCore.Authorization
+
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService Swal
+
+<h3>Crear Categoría</h3>
+
+<CategoriaForm Model="categoria" OnValidSubmit="Guardar" />
+
+@code {
+    private CategoriaCreateDto categoria = new();
+
+    private async Task Guardar()
+    {
+        var response = await repository.PostAsync("/api/Categorias", categoria);
+        if (response.Error)
+        {
+            var mensaje = await response.GetErrorMessageAsync();
+            await Swal.FireAsync("Error", $"No se pudo crear la categoría: {mensaje}", SweetAlertIcon.Error);
+        }
+        else
+        {
+            navigationManager.NavigateTo("/categorias");
+        }
+    }
+}

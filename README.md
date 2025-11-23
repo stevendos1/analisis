@@ -1,135 +1,85 @@
 # Spendn't
 
-Sistema de gestión de gastos e ingresos personales desarrollado con ASP.NET Core y Blazor WebAssembly.
+## Descripción general
+Spendn't es una plataforma de gestión financiera personal compuesta por una API ASP.NET Core y un cliente web Blazor. El sistema permite a las personas registrar ingresos y egresos, planificar metas de ahorro, administrar recordatorios de gastos y visualizar un calendario de eventos financieros consolidado. La solución utiliza Entity Framework Core como ORM y expone documentación interactiva mediante Swagger para facilitar la exploración de los endpoints.
 
-## 📋 Requisitos Previos
+## Arquitectura y componentes
+- **Spendnt.API:** API REST protegida con autenticación JWT. Organiza la lógica de negocio en controladores, servicios auxiliares, DTOs y entidades persistidas en SQL Server. Incluye inicialización de datos (`SeedDB`) y almacenamiento de archivos.
+- **Spendnt.Shared:** Biblioteca de clases compartida con las entidades del dominio y los DTOs que permiten desacoplar la capa de transporte de la capa de datos.
+- **Spendnt.WEB:** Aplicación cliente Blazor WebAssembly que consume la API para ofrecer experiencias como dashboards, formularios de registro de movimientos y seguimiento de metas.
 
-- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) o superior
-- [Microsoft SQL Server](https://www.microsoft.com/sql-server/sql-server-downloads) (cualquier edición)
-- Un IDE como Visual Studio 2022 o Visual Studio Code
+## Objetivo principal
+Brindar a las personas una herramienta centralizada para tomar decisiones informadas sobre sus finanzas personales mediante el registro estructurado de sus operaciones y la visualización de indicadores clave.
 
-## ⚙️ Configuración Inicial
+## Objetivos específicos
+1. **Planificación y análisis:** Levantar los requisitos funcionales y no funcionales del caso de uso financiero, identificando entidades, flujos y reglas de negocio.
+2. **Diseño de arquitectura y datos:** Definir una arquitectura en capas con contratos desacoplados (interfaces, DTOs) y modelar las relaciones entre entidades utilizando Entity Framework Core.
+3. **Implementación de funcionalidades:** Desarrollar la API y el cliente web que materializan los casos de uso principales (autenticación, manejo de ingresos/egresos, metas de ahorro, recordatorios y calendario de eventos).
+4. **Pruebas y aseguramiento de calidad:** Validar el funcionamiento de los endpoints y la interfaz mediante pruebas manuales y la documentación Swagger para garantizar la integridad de los datos y la experiencia del usuario.
+5. **Despliegue y operación:** Preparar la solución para su publicación configurando la cadena de conexión, seeding inicial y políticas de seguridad (JWT, CORS) que permitan su operación en distintos entornos.
 
-### 1. Configurar la Base de Datos
+## Características destacadas
+- Generación automática de un calendario financiero que integra transacciones, recordatorios y metas del usuario.
+- Gestión completa del ciclo de vida de los ingresos, egresos, saldos, metas de ahorro y recordatorios.
+- Autenticación y autorización basada en ASP.NET Core Identity con tokens JWT.
+- Documentación Swagger UI disponible en entornos de desarrollo para explorar y probar la API.
+- Separación clara entre entidades de dominio, DTOs y lógica de presentación para favorecer el mantenimiento y la escalabilidad.
 
-Antes de ejecutar el proyecto, debes actualizar la cadena de conexión en los archivos de configuración:
+## Tecnologías principales
+- ASP.NET Core 9
+- Entity Framework Core
+- SQL Server
+- Blazor WebAssembly
+- ASP.NET Core Identity & JWT
+- Swagger / OpenAPI
 
-#### Archivos a modificar:
-- `Spendnt.API/appsettings.json`
-- `Spendnt.API/appsettings.Development.json`
+## Requisitos previos
+- [.NET SDK 9.0](https://dotnet.microsoft.com/download)
+- Instancia de SQL Server (LocalDB, Developer o una base compatible con SQL Server)
+- Opcional: herramienta `dotnet-ef` instalada globalmente (`dotnet tool install --global dotnet-ef`) para ejecutar migraciones desde la terminal
 
-#### Cambiar la cadena de conexión:
+## Configuración inicial
+1. Clona el repositorio y ubícate en la carpeta raíz (`Spendnt/`).
+2. Actualiza la cadena de conexión `DefaultConnection` en `Spendnt.API/appsettings.Development.json` (y/o `appsettings.json`) para que apunte a tu servidor SQL Server.
+3. Verifica que los valores de JWT en `appsettings.Development.json` coincidan con las URLs que planeas utilizar (por defecto apuntan a los puertos de desarrollo descritos abajo).
 
-**Para SQL Server con autenticación de Windows:**
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=TU_SERVIDOR\\NOMBRE_INSTANCIA;Database=Spendnt;Trusted_Connection=True;TrustServerCertificate=True;"
-  }
-}
-```
-
-**Para SQL Server con autenticación SQL:**
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=TU_SERVIDOR;Database=Spendnt;User Id=TU_USUARIO;Password=TU_CONTRASEÑA;TrustServerCertificate=True;"
-  }
-}
-```
-
-**Ejemplo con autenticación de Windows:**
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=STEVEN_OSORIO\\MSSQLSERVER02;Database=Spendnt;Trusted_Connection=True;TrustServerCertificate=True;"
-  }
-}
-```
-
-### 2. Aplicar Migraciones
-
-Desde la carpeta raíz del proyecto, ejecuta los siguientes comandos en PowerShell o tu terminal preferida:
+## Migraciones y base de datos
+La API incluye migraciones de Entity Framework Core y un seeder que crea datos de ejemplo. Para preparar la base de datos ejecuta:
 
 ```powershell
-# Navegar al proyecto de la API
-cd Spendnt.API
-
-# Aplicar las migraciones a la base de datos
-dotnet ef database update
+dotnet ef database update --project Spendnt.API/Spendnt.API.csproj --startup-project Spendnt.API/Spendnt.API.csproj
 ```
 
-Esto creará la base de datos `Spendnt` con todas las tablas necesarias y datos iniciales de prueba.
+El comando anterior crea o actualiza la base de datos indicada en la cadena de conexión. Al arrancar la API en entorno de desarrollo se ejecuta el seeding (`SeedDB`) que crea roles, categorías predefinidas, movimientos de ejemplo y un usuario de prueba.
 
-## 🚀 Ejecutar el Proyecto
+## Ejecución de los proyectos (solo `dotnet run`)
+1. Abre una terminal en la raíz del repositorio (`Spendnt/`).
+2. Inicia la API con `dotnet run`:
 
-### Opción 1: Ejecutar ambos proyectos manualmente
+	```powershell
+	dotnet run --project Spendnt.API/Spendnt.API.csproj
+	```
 
-**Terminal 1 - API (Backend):**
-```powershell
-cd Spendnt.API
-dotnet run
-```
-La API estará disponible en:
-- HTTP: `http://localhost:5230`
-- HTTPS: `https://localhost:7000`
-- Swagger UI: `https://localhost:7000/swagger`
+	La API expone Swagger en `http://localhost:5230/swagger` mientras está en ejecución.
 
-**Terminal 2 - Web (Frontend):**
-```powershell
-cd Spendnt.WEB
-dotnet run
-```
-La aplicación web estará disponible en:
-- HTTP: `http://localhost:5047`
-- HTTPS: `https://localhost:8000`
+3. En una segunda terminal, inicia el cliente Blazor WebAssembly:
 
-### Opción 2: Ejecutar con Visual Studio
+	```powershell
+	dotnet run --project Spendnt.WEB/Spendnt.WEB.csproj
+	```
 
-1. Abre la solución `Spendnt.sln`
-2. Configura múltiples proyectos de inicio:
-   - Click derecho en la solución → Propiedades
-   - Selecciona "Proyectos de inicio múltiples"
-   - Marca `Spendnt.API` y `Spendnt.WEB` como "Iniciar"
-3. Presiona F5 para ejecutar
+	El cliente se conectará automáticamente a la API en los puertos por defecto.
 
-## 🌐 Puertos de la Aplicación
+Puertos por defecto configurados en los perfiles de desarrollo:
+- API: `http://localhost:5230` (HTTPS opcional en `https://localhost:7000`).
+- Cliente Blazor: `http://localhost:5047` (HTTPS opcional en `https://localhost:8000`).
 
-| Componente | HTTP | HTTPS |
-|------------|------|-------|
-| API Backend | `http://localhost:5230` | `https://localhost:7000` |
-| Web Frontend | `http://localhost:5047` | `https://localhost:8000` |
-| Swagger API Docs | - | `https://localhost:7000/swagger` |
+## Usuario de prueba inicial
+El seeder crea un usuario listo para iniciar sesión y explorar la aplicación:
 
-## 👤 Usuario de Prueba
+- **Correo:** `testuser@example.com`
+- **Contraseña:** `Password123!`
+- **Rol:** `User` (los roles `User` y `Admin` se crean automáticamente).
 
-El sistema crea automáticamente un usuario de prueba con las siguientes credenciales (consulta `SeedDB.cs` para más detalles):
-
-- **Email**: `testuser@example.com`
-- **Contraseña**: `Password123!`
-
-Este usuario ya tiene datos de ejemplo precargados (categorías, ingresos, egresos, metas de ahorro, etc.).
-
-## 📁 Estructura del Proyecto
-
-```
-Spendnt-main/
-├── Spendnt.API/          # Backend API (ASP.NET Core)
-├── Spendnt.Shared/       # Entidades y DTOs compartidos
-└── Spendnt.WEB/          # Frontend (Blazor WebAssembly)
-```
-
-## 🛠️ Tecnologías Utilizadas
-
-- **Backend**: ASP.NET Core 9.0 Web API
-- **Frontend**: Blazor WebAssembly
-- **Base de Datos**: SQL Server con Entity Framework Core
-- **Autenticación**: JWT (JSON Web Tokens)
-- **ORM**: Entity Framework Core 9.0
-
-## 📝 Notas Adicionales
-
-- Asegúrate de que el servidor SQL Server esté en ejecución antes de iniciar la aplicación
-- La primera vez que ejecutes el proyecto, se aplicarán las migraciones automáticamente
-- El sistema incluye datos de prueba (categorías, saldos, etc.) que se crean automáticamente
+Si necesitas un administrador, puedes promover el usuario semilla manualmente o crear uno nuevo usando las herramientas de Identity.
 

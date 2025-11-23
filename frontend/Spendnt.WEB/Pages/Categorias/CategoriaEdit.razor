@@ -1,0 +1,101 @@
+﻿@page "/categorias/edit/{Id:int}"
+@attribute [Authorize(Roles = "Admin")] 
+
+@using Spendnt.Shared.DTOs.Categoria
+@using Spendnt.WEB.Repositories
+@using CurrieTechnologies.Razor.SweetAlert2
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService Swal
+
+<h3>Editar Categoría</h3>
+
+@if (categoria is null && !isLoadingError)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (isLoadingError)
+{
+    <div class="alert alert-danger">No se pudo cargar la categoría para editar.</div>
+}
+else if (categoria is not null)
+{
+    <CategoriaForm Model="categoria" OnValidSubmit="Guardar" />
+}
+
+@code {
+#nullable enable
+    [Parameter] public int Id { get; set; }
+
+    private CategoriaCreateDto? categoria;
+    private bool isLoadingError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var response = await repository.GetAsync<CategoriaDto>($"/api/Categorias/{Id}");
+            if (response.Error)
+            {
+                isLoadingError = true;
+                if (response.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    navigationManager.NavigateTo("/categorias");
+                }
+                else
+                {
+                    await Swal.FireAsync("Error", await response.GetErrorMessageAsync(), SweetAlertIcon.Error);
+                }
+            }
+            else
+            {
+                var categoriaDetalle = response.Response;
+                if (categoriaDetalle == null)
+                {
+                    isLoadingError = true;
+                }
+                else
+                {
+                    categoria = new CategoriaCreateDto
+                    {
+                        Nombre = categoriaDetalle.Nombre,
+                        Descripcion = categoriaDetalle.Descripcion
+                    };
+                }
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            isLoadingError = true;
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            isLoadingError = true;
+            await Swal.FireAsync("Error", $"Error inesperado al cargar la categoría: {ex.Message}", SweetAlertIcon.Error);
+        }
+    }
+
+    private async Task Guardar()
+    {
+        if (categoria is null)
+        {
+            await Swal.FireAsync("Error", "No se cargó la información de la categoría.", SweetAlertIcon.Error);
+            return;
+        }
+
+        var response = await repository.PutAsync($"/api/Categorias/{Id}", categoria);
+        if (response.Error)
+        {
+            var mensaje = await response.GetErrorMessageAsync();
+            await Swal.FireAsync("Error", $"No se pudo actualizar la categoría: {mensaje}", SweetAlertIcon.Error);
+        }
+        else
+        {
+            navigationManager.NavigateTo("/categorias");
+        }
+    }
+}

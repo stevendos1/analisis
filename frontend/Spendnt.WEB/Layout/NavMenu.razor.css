@@ -1,0 +1,160 @@
+﻿.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    height: 100%;
+}
+
+.nav-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: 12px;
+    text-decoration: none;
+    color: rgba(248, 248, 248, 0.78);
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    letter-spacing: 0.01em;
+    font-size: 0.97rem;
+}
+
+.nav-link .bi {
+    font-size: 1.2rem;
+}
+
+.nav-link:hover,
+.nav-link:focus {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    transform: translateX(4px);
+}
+
+.nav-link.active {
+    background-color: #ffffff;
+    color: #111111;
+    font-weight: 600;
+}
+
+.user-card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 1rem;
+}
+
+.user-card-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.avatar.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1.65rem;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: #ffffff;
+    text-transform: capitalize;
+    letter-spacing: 0.01em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-email {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.55);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-link {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.user-card-link .bi-chevron-right {
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.9rem;
+}
+
+.nav-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.logout-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.8rem 0.9rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.logout-button .bi {
+    font-size: 1.05rem;
+}
+
+.logout-button:hover,
+.logout-button:focus {
+    background: #ffffff;
+    color: #111111;
+    transform: translateY(-1px);
+    border-color: #ffffff;
+}
+
+@media (max-width: 991.98px) {
+    .nav-menu {
+        gap: 1.4rem;
+    }
+
+    .user-card {
+        padding: 0.9rem;
+    }
+
+    .nav-link {
+        padding: 0.7rem 0.85rem;
+    }
+}

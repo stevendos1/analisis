@@ -1,0 +1,103 @@
+﻿@page "/recordatorios/edit/{Id:int}"
+@attribute [Authorize]
+
+@using Spendnt.Shared.DTOs.RecordatorioGasto
+@using Spendnt.WEB.Repositories
+@using CurrieTechnologies.Razor.SweetAlert2
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService Swal
+
+<h3>Editar Recordatorio de Gasto</h3>
+
+@if (recordatorioModel is null && !loadFailed)
+{
+    <p><em>Cargando recordatorio...</em></p>
+}
+else if (loadFailed)
+{
+    <div class="alert alert-danger">No se pudo cargar el recordatorio para editar.</div>
+}
+else if (recordatorioModel is not null)
+{
+    <RecordatorioForm Recordatorio="recordatorioModel!" OnValidSubmit="Guardar" />
+}
+
+@code {
+#nullable enable
+    [Parameter] public int Id { get; set; }
+    private RecordatorioGastoUpdateDto? recordatorioModel;
+    private bool loadFailed = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        loadFailed = false;
+        try
+        {
+            var responseHttp = await repository.GetAsync<RecordatorioGastoDto>($"api/RecordatoriosGasto/{Id}");
+            if (responseHttp.Error)
+            {
+                loadFailed = true;
+                if (responseHttp.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    navigationManager.NavigateTo("/recordatorios");
+                }
+                else
+                {
+                    await Swal.FireAsync("Error", await responseHttp.GetErrorMessageAsync(), SweetAlertIcon.Error);
+                }
+            }
+            else
+            {
+                var recordatorioDetalle = responseHttp.Response;
+                if (recordatorioDetalle == null)
+                {
+                    loadFailed = true;
+                }
+                else
+                {
+                    recordatorioModel = new RecordatorioGastoUpdateDto
+                    {
+                        Titulo = recordatorioDetalle.Titulo,
+                        MontoEstimado = recordatorioDetalle.MontoEstimado,
+                        FechaProgramada = recordatorioDetalle.FechaProgramada,
+                        Notas = recordatorioDetalle.Notas
+                    };
+                }
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            loadFailed = true;
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            loadFailed = true;
+            await Swal.FireAsync("Error", $"Error inesperado al cargar el recordatorio: {ex.Message}", SweetAlertIcon.Error);
+        }
+    }
+
+    private async Task Guardar()
+    {
+        if (recordatorioModel is null)
+        {
+            await Swal.FireAsync("Error", "No se pudo cargar el recordatorio para actualizar.", SweetAlertIcon.Error);
+            return;
+        }
+
+        var response = await repository.PutAsync($"/api/RecordatoriosGasto/{Id}", recordatorioModel);
+        if (response.Error)
+        {
+            var mensaje = await response.GetErrorMessageAsync();
+            await Swal.FireAsync("Error", $"No se pudo actualizar el recordatorio: {mensaje}", SweetAlertIcon.Error);
+        }
+        else
+        {
+            navigationManager.NavigateTo("/recordatorios");
+        }
+    }
+}
